@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <!-- The CSS package above applies Google styling to buttons and other elements. -->
+    <style>
+    .branding-below {
+      bottom: 54px;
+      top: 0;
+    }
+    .branding-text {
+      left: 7px;
+      position: relative;
+      top: 3px;
+    }
+    .logo {
+      vertical-align: middle;
+    }
+    .width-100 {
+      width: 100%;
+      box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+    }
+    label {
+      font-weight: bold;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar branding-below">
+      <form>
+        <div class="block">
+          <input type="checkbox" id="connect">
+          <label for="connect">Connect</label>
+        </div>
+
+        <div class="block" id="button-bar">
+          <button class="action" id="save-settings">Save</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="sidebar bottom">
+      <img alt="Add-on logo" class="logo" width="25"
+          src="https://g-suite-documentation-images.firebaseapp.com/images/newFormNotificationsicon.png">
+      <span class="gray branding-text">FormConnector by Elvis Rozario</span>
+    </div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+    </script>
+    <script>
+      /**
+       * On document load, assign required handlers to each element,
+       * and attempt to load any saved settings.
+       */
+      $(function() {
+        $('#save-settings').click(saveSettingsToServer);
+        google.script.run
+           .withSuccessHandler(loadSettings)
+           .withFailureHandler(showStatus)
+           .withUserObject($('#button-bar').get())
+           .getSettings();
+      });
+
+      /**
+       * Callback function that populates the connection options using
+       * previously saved values.
+       *
+       * @param {Object} settings The saved settings from the client.
+       */
+      function loadSettings(settings) {
+        if (settings.connect === 'true') {
+          $('#connect').prop('checked', true);
+        }
+      }
+
+      /**
+       * Collects the options specified in the add-on sidebar and sends them to
+       * be saved as Properties on the server.
+       */
+      function saveSettingsToServer() {
+        this.disabled = true;
+        $('#status').remove();
+        var connect = $('#connect').is(':checked');
+
+        // Save the settings on the server
+        google.script.run
+            .withSuccessHandler(
+              function(msg, element) {
+                showStatus('Saved settings', $('#button-bar'));
+                element.disabled = false;
+              })
+            .withFailureHandler(
+              function(msg, element) {
+                showStatus(msg, $('#button-bar'));
+                element.disabled = false;
+              })
+            .withUserObject(this)
+            .saveSettings('connect', connect);
+      }
+
+      /**
+       * Inserts a div that contains an status message after a given element.
+       *
+       * @param {String} msg The status message to display.
+       * @param {Object} element The element after which to display the Status.
+       */
+      function showStatus(msg, element) {
+         var div = $('<div>')
+             .attr('id', 'status')
+             .attr('class','error')
+             .text(msg);
+        $(element).after(div);
+      }
+    </script>
+  </body>
+</html>
